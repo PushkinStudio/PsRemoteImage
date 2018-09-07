@@ -14,7 +14,7 @@ struct FSlateDynamicImageBrush;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FImageLoaded);
 
 UCLASS()
-class PSREMOTEIMAGE_API UPSRemoteImage : public UWidget
+class PSREMOTEIMAGE_API UPsRemoteImage : public UWidget
 {
 	GENERATED_UCLASS_BODY()
 

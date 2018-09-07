@@ -9,6 +9,7 @@
 #include "Misc/Guid.h"
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
+#include "Misc/SecureHash.h"
 #include "Async/Async.h"
 #include "HAL/PlatformFilemanager.h"
 #include "Framework/Application/SlateApplication.h"
@@ -16,7 +17,7 @@
 
 #define LOCTEXT_NAMESPACE "PsRemoteImageModule"
 
-UPSRemoteImage::UPSRemoteImage(const FObjectInitializer& ObjectInitializer)
+UPsRemoteImage::UPsRemoteImage(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	bShowProgress = true;
@@ -25,44 +26,44 @@ UPSRemoteImage::UPSRemoteImage(const FObjectInitializer& ObjectInitializer)
 }
 
 #if WITH_EDITOR
-const FText UPSRemoteImage::GetPaletteCategory()
+const FText UPsRemoteImage::GetPaletteCategory()
 {
 	return LOCTEXT("Common", "Common");
 }
 #endif // WITH_EDITOR
 
-void UPSRemoteImage::SetURL(FString InURL)
+void UPsRemoteImage::SetURL(FString InURL)
 {
 	URL = InURL;
 	LoadImage(URL);
 }
 
-void UPSRemoteImage::SetShowProgress(bool bInShowProgress)
+void UPsRemoteImage::SetShowProgress(bool bInShowProgress)
 {
 	bShowProgress = bInShowProgress;
 }
 
-TSharedRef<SWidget> UPSRemoteImage::RebuildWidget()
+TSharedRef<SWidget> UPsRemoteImage::RebuildWidget()
 {
 	SlateImage = SNew(SImageWithThrobber);
 	return SlateImage.ToSharedRef();
 }
 
-void UPSRemoteImage::ReleaseSlateResources(bool bReleaseChildren)
+void UPsRemoteImage::ReleaseSlateResources(bool bReleaseChildren)
 {
 	Super::ReleaseSlateResources(bReleaseChildren);
 	
 	SlateImage.Reset();
 }
 
-void UPSRemoteImage::SynchronizeProperties()
+void UPsRemoteImage::SynchronizeProperties()
 {
 	Super::SynchronizeProperties();
 	
 	LoadImage(URL);
 }
 
-void UPSRemoteImage::LoadImage(FString InURL)
+void UPsRemoteImage::LoadImage(FString InURL)
 {
 	if (InURL.IsEmpty())
 	{
@@ -95,7 +96,7 @@ void UPSRemoteImage::LoadImage(FString InURL)
 	}
 }
 
-void UPSRemoteImage::LoadImageComplete()
+void UPsRemoteImage::LoadImageComplete()
 {
 	ImageData.Empty();
 	bWorking = false;
@@ -116,14 +117,14 @@ void UPSRemoteImage::LoadImageComplete()
 	}
 }
 
-bool UPSRemoteImage::IsImageCached(const FString& InURL) const
+bool UPsRemoteImage::IsImageCached(const FString& InURL) const
 {
 	const bool bCached = !InURL.IsEmpty() && FPaths::FileExists(GetCacheFilename(InURL));
 	
 	return bCached;
 }
 
-FString UPSRemoteImage::GetCacheFilename(const FString& InURL) const
+FString UPsRemoteImage::GetCacheFilename(const FString& InURL) const
 {
 	if (InURL.IsEmpty())
 	{
@@ -136,7 +137,7 @@ FString UPSRemoteImage::GetCacheFilename(const FString& InURL) const
 	return Filename;
 }
 
-void UPSRemoteImage::AsyncAddImageToCache(const FString &InURL, const TArray<uint8>& InImageData)
+void UPsRemoteImage::AsyncAddImageToCache(const FString &InURL, const TArray<uint8>& InImageData)
 {
 	Async<void>(EAsyncExecution::ThreadPool, [this, InURL, &InImageData]()
 	{
@@ -150,7 +151,7 @@ void UPSRemoteImage::AsyncAddImageToCache(const FString &InURL, const TArray<uin
 	});
 }
 
-void UPSRemoteImage::RemoveImageFromCache(const FString& InURL)
+void UPsRemoteImage::RemoveImageFromCache(const FString& InURL)
 {
 	const FString CacheFilename = GetCacheFilename(InURL);
 	const bool bDeleted = FPlatformFileManager::Get().GetPlatformFile().DeleteFile(*CacheFilename);
@@ -161,7 +162,7 @@ void UPSRemoteImage::RemoveImageFromCache(const FString& InURL)
 	}
 }
 
-void UPSRemoteImage::AsyncLoadCachedImage(const FString& InURL)
+void UPsRemoteImage::AsyncLoadCachedImage(const FString& InURL)
 {
 	Async<void>(EAsyncExecution::ThreadPool, [this, InURL]()
 	{
@@ -187,7 +188,7 @@ void UPSRemoteImage::AsyncLoadCachedImage(const FString& InURL)
 	});
 }
 
-void UPSRemoteImage::LoadCachedImageSuccess(const FString& InURL)
+void UPsRemoteImage::LoadCachedImageSuccess(const FString& InURL)
 {
 	const bool bLoadedImage = SetImageData(ImageData);
 	
@@ -203,23 +204,23 @@ void UPSRemoteImage::LoadCachedImageSuccess(const FString& InURL)
 	}
 }
 
-void UPSRemoteImage::LoadCachedImageFailure(const FString& InURL)
+void UPsRemoteImage::LoadCachedImageFailure(const FString& InURL)
 {
 	RemoveImageFromCache(InURL);
 	AsyncDownloadImage(InURL);
 }
 
-void UPSRemoteImage::AsyncDownloadImage(const FString& InURL)
+void UPsRemoteImage::AsyncDownloadImage(const FString& InURL)
 {
 	TSharedRef<IHttpRequest> HttpRequest = FHttpModule::Get().CreateRequest();
 	
-	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UPSRemoteImage::DownloadImage_HttpRequestComplete);
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UPsRemoteImage::DownloadImage_HttpRequestComplete);
 	HttpRequest->SetURL(InURL);
 	HttpRequest->SetVerb(TEXT("GET"));
 	HttpRequest->ProcessRequest();
 }
 
-void UPSRemoteImage::DownloadImage_HttpRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+void UPsRemoteImage::DownloadImage_HttpRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
 {
 	if (bWasSuccessful && Response.IsValid())
 	{
@@ -238,7 +239,7 @@ void UPSRemoteImage::DownloadImage_HttpRequestComplete(FHttpRequestPtr Request, 
 	}
 }
 
-bool UPSRemoteImage::SetImageData(const TArray<uint8>& InImageData)
+bool UPsRemoteImage::SetImageData(const TArray<uint8>& InImageData)
 {
 	if (SlateImage.IsValid())
 	{
@@ -267,7 +268,7 @@ bool UPSRemoteImage::SetImageData(const TArray<uint8>& InImageData)
 	return false;
 }
 
-TSharedPtr<FSlateDynamicImageBrush> UPSRemoteImage::CreateBrush(const TArray<uint8>& InImageData) const
+TSharedPtr<FSlateDynamicImageBrush> UPsRemoteImage::CreateBrush(const TArray<uint8>& InImageData) const
 {
 	TSharedPtr<FSlateDynamicImageBrush> BrushRet;
 	FName ResourceName = FName(*FString::Printf(TEXT("PSRemoteImage_%s"), *FGuid::NewGuid().ToString()));
