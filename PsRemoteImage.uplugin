@@ -1,0 +1,22 @@
+{
+	"FileVersion" : 3,
+
+	"FriendlyName" : "PsRemoteImage",
+	"Version" : 2,
+	"VersionName" : "1.1",
+	"CreatedBy" : "Pushkin Studio",
+	"CreatedByURL" : "https://github.com/PushkinStudio",
+	"EngineVersion" : "4.20.0",
+	"Description" : "",
+	"Category" : "",
+	"MarketplaceURL" : "",
+
+	"Modules" :
+	[
+		{
+			"Name" : "PsRemoteImage",
+			"Type" : "Runtime",
+			"LoadingPhase": "PreDefault"
+		}
+	]
+}
