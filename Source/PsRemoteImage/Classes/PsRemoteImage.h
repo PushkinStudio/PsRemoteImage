@@ -74,6 +74,9 @@ private:
 	/** Add image data to cache */
 	void AsyncAddImageToCache(const FString& InURL, const TArray<uint8>& InImageData);
 	
+	/** Get cache file creation date */
+	FString GetCacheDate(const FString& InURL) const;
+	
 	/** Remove image from cache */
 	void RemoveImageFromCache(const FString& InURL);
 	
@@ -91,6 +94,12 @@ private:
 	
 	/** Callback of downloading image */
 	void DownloadImage_HttpRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
+	
+	/** Download image from network if it is newer that cached file */
+	void AsyncDownloadImageCheckCache(const FString& InURL);
+	
+	/** Callback of downloading image with cache check */
+	void DownloadImageCheckCache_HttpRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful);
 	
 	/** Update Slate image with image data */
 	bool SetImageData(const TArray<uint8>& InImageData);

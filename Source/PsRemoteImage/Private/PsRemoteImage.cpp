@@ -10,6 +10,7 @@
 #include "Misc/Paths.h"
 #include "Misc/FileHelper.h"
 #include "Misc/SecureHash.h"
+#include "Misc/DateTime.h"
 #include "Async/Async.h"
 #include "HAL/PlatformFilemanager.h"
 #include "Framework/Application/SlateApplication.h"
@@ -151,6 +152,13 @@ void UPsRemoteImage::AsyncAddImageToCache(const FString &InURL, const TArray<uin
 	});
 }
 
+FString UPsRemoteImage::GetCacheDate(const FString& InURL) const
+{
+	const FString CacheFilename = GetCacheFilename(InURL);
+	const FDateTime ModificationDate = FPlatformFileManager::Get().GetPlatformFile().GetTimeStamp(*CacheFilename);
+	return ModificationDate.ToHttpDate();
+}
+
 void UPsRemoteImage::RemoveImageFromCache(const FString& InURL)
 {
 	const FString CacheFilename = GetCacheFilename(InURL);
@@ -194,7 +202,12 @@ void UPsRemoteImage::LoadCachedImageSuccess(const FString& InURL)
 	
 	if (bLoadedImage)
 	{
-		LoadImageComplete();
+		if (SlateImage.IsValid())
+		{
+			SlateImage->SetShowProgress(false);
+		}
+		
+		AsyncDownloadImageCheckCache(InURL);
 	}
 	else
 	{
@@ -217,6 +230,7 @@ void UPsRemoteImage::AsyncDownloadImage(const FString& InURL)
 	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UPsRemoteImage::DownloadImage_HttpRequestComplete);
 	HttpRequest->SetURL(InURL);
 	HttpRequest->SetVerb(TEXT("GET"));
+	
 	HttpRequest->ProcessRequest();
 }
 
@@ -234,7 +248,42 @@ void UPsRemoteImage::DownloadImage_HttpRequestComplete(FHttpRequestPtr Request, 
 	}
 	else
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("Failed to download image"));
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s failed to download image"), *VA_FUNC_LINE);
+		LoadImageComplete();
+	}
+}
+
+void UPsRemoteImage::AsyncDownloadImageCheckCache(const FString& InURL)
+{
+	TSharedRef<IHttpRequest> HttpRequest = FHttpModule::Get().CreateRequest();
+	
+	HttpRequest->OnProcessRequestComplete().BindUObject(this, &UPsRemoteImage::DownloadImageCheckCache_HttpRequestComplete);
+	HttpRequest->SetURL(InURL);
+	HttpRequest->SetVerb(TEXT("GET"));
+	
+	const FString CacheFileDate = GetCacheDate(InURL);
+	HttpRequest->SetHeader(TEXT("If-Modified-Since"), CacheFileDate);
+	
+	HttpRequest->ProcessRequest();
+}
+
+void UPsRemoteImage::DownloadImageCheckCache_HttpRequestComplete(FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+{
+	if (Response.IsValid())
+	{
+		if (Response->GetResponseCode() == 304)
+		{
+			LoadImageComplete();
+			return;
+		}
+		else
+		{
+			DownloadImage_HttpRequestComplete(Request, Response, bWasSuccessful);
+		}
+	}
+	else
+	{
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s invalid response"), *VA_FUNC_LINE);
 		LoadImageComplete();
 	}
 }
