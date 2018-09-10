@@ -2,6 +2,7 @@
 
 #include "PsRemoteImagePrivatePCH.h"
 #include "PsRemoteImage.h"
+#include "PsRemoteImageLibrary.h"
 #include "SImageWithThrobber.h"
 
 #include "IImageWrapper.h"
@@ -134,7 +135,7 @@ FString UPsRemoteImage::GetCacheFilename(const FString& InURL) const
 	}
 	
 	const FString Hash = FMD5::HashAnsiString(*InURL);
-	const FString Filename = FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::ProjectIntermediateDir()), TEXT("PSRemoteImage"), TEXT("Cache"), FString::Printf(TEXT("%s.bin"), *Hash));
+	const FString Filename = FPaths::Combine(UPsRemoteImageLibrary::GetCacheDirectory(), FString::Printf(TEXT("%s.bin"), *Hash));
 	return Filename;
 }
 
