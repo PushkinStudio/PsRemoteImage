@@ -76,7 +76,7 @@ void UPsRemoteImage::LoadImage(FString InURL)
 	if (bWorking)
 	{
 		bPendingWork = true;
-		UE_LOG(LogPsRemoteImage, Warning, TEXT("%s work in progress, postponing image loading"), *VA_FUNC_LINE);
+		UE_LOG(LogPsRemoteImage, Warning, TEXT("%s work in progress, postponing image loading"), *PS_FUNC_LINE);
 		return;
 	}
 	
@@ -130,7 +130,7 @@ FString UPsRemoteImage::GetCacheFilename(const FString& InURL) const
 {
 	if (InURL.IsEmpty())
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("GetCacheFilename empty URL"));
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s empty URL"), *PS_FUNC_LINE);
 		return FString();
 	}
 	
@@ -167,7 +167,7 @@ void UPsRemoteImage::RemoveImageFromCache(const FString& InURL)
 	
 	if (!bDeleted)
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't delete cached image"), *VA_FUNC_LINE);
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't delete cached image"), *PS_FUNC_LINE);
 	}
 }
 
@@ -212,7 +212,7 @@ void UPsRemoteImage::LoadCachedImageSuccess(const FString& InURL)
 	}
 	else
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't load cached image, trying to download it"), *VA_FUNC_LINE);
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't load cached image, trying to download it"), *PS_FUNC_LINE);
 		RemoveImageFromCache(InURL);
 		AsyncDownloadImage(InURL);
 	}
@@ -249,7 +249,7 @@ void UPsRemoteImage::DownloadImage_HttpRequestComplete(FHttpRequestPtr Request, 
 	}
 	else
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("%s failed to download image"), *VA_FUNC_LINE);
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s failed to download image"), *PS_FUNC_LINE);
 		LoadImageComplete();
 	}
 }
@@ -284,7 +284,7 @@ void UPsRemoteImage::DownloadImageCheckCache_HttpRequestComplete(FHttpRequestPtr
 	}
 	else
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("%s invalid response"), *VA_FUNC_LINE);
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s invalid response"), *PS_FUNC_LINE);
 		LoadImageComplete();
 	}
 }
@@ -307,12 +307,12 @@ bool UPsRemoteImage::SetImageData(const TArray<uint8>& InImageData)
 		}
 		else
 		{
-			UE_LOG(LogPsRemoteImage, Error, TEXT("%s invalid SlateImage"), *VA_FUNC_LINE);
+			UE_LOG(LogPsRemoteImage, Error, TEXT("%s invalid SlateImage"), *PS_FUNC_LINE);
 		}
 	}
 	else
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("%s invalid Brush"), *VA_FUNC_LINE);
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s invalid Brush"), *PS_FUNC_LINE);
 	}
 	
 	return false;
@@ -329,7 +329,7 @@ TSharedPtr<FSlateDynamicImageBrush> UPsRemoteImage::CreateBrush(const TArray<uin
 	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(ImageType);
 	if (!ImageWrapper.IsValid())
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("Resource '%s' is not a supported image type"), *ResourceName.ToString());
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s resource '%s' is not a supported image type"), *PS_FUNC_LINE, *ResourceName.ToString());
 		return nullptr;
 	}
 	
@@ -347,19 +347,19 @@ TSharedPtr<FSlateDynamicImageBrush> UPsRemoteImage::CreateBrush(const TArray<uin
 		}
 		else
 		{
-			UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't get raw data"), *VA_FUNC_LINE);
+			UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't get raw data"), *PS_FUNC_LINE);
 			return nullptr;
 		}
 	}
 	else
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't load compressed data"), *VA_FUNC_LINE);
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't load compressed data"), *PS_FUNC_LINE);
 		return nullptr;
 	}
 	
 	if (DecodedImage.Num() <= 0)
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("%s raw data is empty"), *VA_FUNC_LINE);
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s raw data is empty"), *PS_FUNC_LINE);
 		return nullptr;
 	}
 	
@@ -372,7 +372,7 @@ TSharedPtr<FSlateDynamicImageBrush> UPsRemoteImage::CreateBrush(const TArray<uin
 	}
 	else
 	{
-		UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't generate resource"), *VA_FUNC_LINE);
+		UE_LOG(LogPsRemoteImage, Error, TEXT("%s can't generate resource"), *PS_FUNC_LINE);
 		return nullptr;
 	}
 }
