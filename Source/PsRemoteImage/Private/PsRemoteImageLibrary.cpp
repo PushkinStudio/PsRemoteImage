@@ -1,4 +1,4 @@
-// Copyright 2018 Pushkin Studio. All Rights Reserved.
+// Copyright 2015-2018 Mail.Ru Group. All Rights Reserved.
 
 #include "PsRemoteImagePrivatePCH.h"
 #include "PsRemoteImageLibrary.h"
@@ -16,7 +16,7 @@ const FString& UPsRemoteImageLibrary::GetCacheDirectory()
 	return Path;
 }
 
-void UPsRemoteImageLibrary::ClearRemoteImageCache()
+void UPsRemoteImageLibrary::ClearImageCache()
 {
 	const auto& Path = GetCacheDirectory();
 	FPlatformFileManager::Get().GetPlatformFile().DeleteDirectoryRecursively(*Path);

@@ -1,4 +1,4 @@
-// Copyright 2018 Mail.Ru Group. All Rights Reserved.
+// Copyright 2015-2018 Mail.Ru Group. All Rights Reserved.
 
 #include "PsRemoteImagePrivatePCH.h"
 #include "SImageWithThrobber.h"

@@ -13,6 +13,14 @@ struct FSlateDynamicImageBrush;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FImageLoaded);
 
+
+/**
+ * UPsRemoteImage is a UMG wrapper for "HTTP/REST image" with caching.
+ *
+ * Usage:
+ * Just add an instance of UPsRemoteImage on palette and specify URL.
+ * Should you wish to clear local image cache, please use the appropriate UPsRemoteImageLibrary function.
+ */
 UCLASS()
 class PSREMOTEIMAGE_API UPsRemoteImage : public UWidget
 {
@@ -29,7 +37,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category=PSRemoteImage)
 	void SetURL(FString InURL);
 	
-	/** Set image URL */
+	/** Show image loading progress indicator */
 	UFUNCTION(BlueprintCallable, Category=PSRemoteImage)
 	void SetShowProgress(bool bInShowProgress);
 	
