@@ -12,7 +12,7 @@ UPsRemoteImageLibrary::UPsRemoteImageLibrary(const FObjectInitializer& ObjectIni
 
 const FString& UPsRemoteImageLibrary::GetCacheDirectory()
 {
-	static const FString Path = FPaths::Combine(FPaths::ConvertRelativePathToFull(FPaths::ProjectIntermediateDir()), TEXT("PSRemoteImage"), TEXT("Cache"));
+	static const FString Path = FPaths::Combine(FPaths::ProjectIntermediateDir(), TEXT("PSRemoteImage"), TEXT("Cache"));
 	return Path;
 }
 
